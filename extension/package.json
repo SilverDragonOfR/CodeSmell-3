@@ -4,7 +4,7 @@
   "description": "An extension to detect codesmell",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.98.0"
+    "vscode": "^1.98.2"
   },
   "categories": [
     "Other"
@@ -12,10 +12,35 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codesmell",
+          "title": "CodeSmell",
+          "icon": "$(warning)"
+        }
+      ]
+    },
+    "views": {
+      "codesmell": [
+        {
+          "id": "codesmell.sidebar",
+          "name": "CodeSmell",
+          "type": "webview",
+          "icon": "$(warning)"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "codesmell.helloWorld",
-        "title": "Hello World"
+        "command": "codesmell.analyseFile",
+        "title": "Analyse File",
+        "category": "CodeSmell"
+      },
+      {
+        "command": "codesmell.analyseProject",
+        "title": "Analyse Project",
+        "category": "CodeSmell"
       }
     ]
   },
