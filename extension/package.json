@@ -33,11 +33,6 @@
     },
     "commands": [
       {
-        "command": "codesmell.analyseFile",
-        "title": "Analyse File",
-        "category": "CodeSmell"
-      },
-      {
         "command": "codesmell.analyseProject",
         "title": "Analyse Project",
         "category": "CodeSmell"

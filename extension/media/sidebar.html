@@ -11,18 +11,51 @@
 
     <body>
         <h2>Welcome to CodeSmell</h2>
-        <p>Select an option below to start your analysis.</p>
-        <button id="analyseFile">Analyse File</button>
+        <p>Click to start your analysis.</p>
         <button id="analyseProject">Analyse Project</button>
+        <hr class="horizontal">
+        <div id="summary"></div>
+        <div id="results" class="list-view"></div>
 
         <script nonce="{{nonce}}">
             const vscode = acquireVsCodeApi();
-            document.getElementById('analyseFile').addEventListener('click', () => {
-                vscode.postMessage({ command: 'analyseFile' });
-            });
+
             document.getElementById('analyseProject').addEventListener('click', () => {
+                document.getElementById('summary').innerHTML = "";
+                document.getElementById('results').innerHTML = "";
                 vscode.postMessage({ command: 'analyseProject' });
             });
+
+            window.addEventListener('message', event => {
+                const message = event.data;
+                if (message.type === 'analysisResult') {
+                    displayResults(message.data);
+                }
+            });
+            
+            function displayResults(data) {
+                const summaryElem = document.getElementById('summary');
+                const resultsContainer = document.getElementById('results');
+                resultsContainer.innerHTML = '';
+
+                if(data && data.length>0) {
+                    summaryElem.innerHTML = `${data.length} Classes`;
+                    data.forEach(item => {
+                        const listItem = document.createElement('div');
+                        listItem.className = 'result-item';
+                        listItem.innerHTML = `<p>${item.class}</p>`;
+                        listItem.addEventListener('click', () => {
+                            vscode.postMessage({
+                                command: 'navigate',
+                                data: { file: item.file, class: item.class }
+                            });
+                        });
+                        resultsContainer.appendChild(listItem);
+                    });
+                } else {
+                    summaryElem.innerHTML = `No Code Smell 💙`;
+                }
+            }
         </script>
     </body>
 </html>

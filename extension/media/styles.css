@@ -22,4 +22,37 @@ button {
 button:hover {
     background-color: #005f9e;
 }
+
+hr.horizontal {
+    border: 0;
+    border-top: 1px solid #007acc2a;
+    margin: 20px 0;
+}
+
+#summary {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
   
+.result-item {
+    padding: 0px 7px;
+    margin-bottom: 12px;
+    background-color: #007acc2a;
+    border: 1px solid #007acc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+  
+.result-item p {
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+  
+.result-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px #007acc2a;
+    background-color: #007acc50;
+}
