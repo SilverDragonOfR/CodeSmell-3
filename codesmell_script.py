@@ -6,7 +6,7 @@ import shutil
 import sys
 import json
 
-# java_code_folder = "C:/Users/rachi/OneDrive/Desktop/MyFolder/CodeSmell - 3/data/java"
+# Change the script to make it same _run.ipynb
 
 ck_jar_path = 'ck-0.7.1.jar'
 ck_output_folder = 'ck_output'
