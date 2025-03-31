@@ -1,4 +1,7 @@
 venv/
+.venv/
 extension/node_modules/
 extension/out/
 ck_output/
+data/java_test/
+data/java_train/
