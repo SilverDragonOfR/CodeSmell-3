@@ -10,9 +10,9 @@ import json
 
 ck_jar_path = 'ck-0.7.1.jar'
 ck_output_folder = 'ck_output'
-pipeline_path = os.path.join(os.path.dirname(__file__), 'output', 'code_smell_preprocessing_pipeline.joblib')
-features_path = os.path.join(os.path.dirname(__file__), 'output', 'selected_features.joblib')
-model_path = os.path.join(os.path.dirname(__file__), 'output', 'code_smell_detection_model.joblib')
+preprocessing_pipeline_path = os.path.join(os.path.dirname(__file__), 'output', 'preprocessing_pipeline.joblib')
+selected_features_path = os.path.join(os.path.dirname(__file__), 'output', 'selected_features.joblib')
+final_model_path = os.path.join(os.path.dirname(__file__), 'output', 'final_model.joblib')
 
 def delete_folder_if_exists(folder):
     os.path.exists(folder) and shutil.rmtree(folder)
@@ -32,12 +32,17 @@ def run_ck(java_code_folder):
         print(f"Stderr: {e.stderr}")
         return False
     
+def get_base_class_name(class_path):
+    if "." not in class_path:
+        return class_path
+    return class_path.split(".")[-1]
+    
 def code_smell_detection(java_code_folder):
     print("Running Code Smell Detection...")
     try:
-        loaded_pipeline = joblib.load(pipeline_path)
-        selected_features = joblib.load(features_path)
-        loaded_model = joblib.load(model_path)
+        loaded_pipeline = joblib.load(preprocessing_pipeline_path)
+        selected_features = joblib.load(selected_features_path)
+        loaded_model = joblib.load(final_model_path)
 
         new_data = pd.read_csv(os.path.join(ck_output_folder, "class.csv"))
 
@@ -47,14 +52,15 @@ def code_smell_detection(java_code_folder):
             print("Please ensure the CK output contains the necessary metrics.")
             return []
 
-        new_data_selected = new_data[selected_features]
-        new_data_processed = loaded_pipeline.transform(new_data_selected)
-        predictions = loaded_model.predict(new_data_processed)
+        numerical_cols = new_data.select_dtypes(include=['number']).columns.tolist()
+        new_data[numerical_cols] = loaded_pipeline.transform(new_data[numerical_cols])
+        new_data_final = new_data[selected_features]
+        predictions = loaded_model.predict(new_data_final)
         
         print(f"Code Smell Predictions for the Java classes ({java_code_folder}):")
         code_smell_classes = []
         for index, prediction in enumerate(predictions):
-            class_name = new_data['class'].iloc[index]
+            class_name = get_base_class_name(new_data['class'].iloc[index])
             file = new_data['file'].iloc[index]
             if prediction == 1:
                 code_smell_classes.append({
