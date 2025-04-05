@@ -6,6 +6,43 @@ h2 {
     color: #007acc;
     font-size: 25px;
 }
+
+label[for="smelltype"] {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 12px 0 4px;
+    color: white;
+}
+
+p {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 12px 0 4px;
+    color: white;
+}
+
+#smelltype {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    font-size: 14px;
+    background-color: #007acc;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+}
+
+#smelltype option {
+    border-radius: 0px;
+    background-color: #005f9e;
+}
+
+#smelltype:hover {
+    background-color: #005f9e;
+}
   
 button {
     width: 100%;
@@ -49,6 +86,7 @@ hr.horizontal {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: 8px 0;
 }
   
 .result-item:hover {

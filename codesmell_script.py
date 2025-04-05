@@ -6,39 +6,24 @@ import shutil
 import sys
 import json
 
-# Change the script to make it same _run.ipynb
-
 ck_jar_path = 'ck-0.7.1.jar'
 ck_output_folder = 'ck_output'
-preprocessing_pipeline_path = os.path.join(os.path.dirname(__file__), 'output', 'preprocessing_pipeline.joblib')
-selected_features_path = os.path.join(os.path.dirname(__file__), 'output', 'selected_features.joblib')
-final_model_path = os.path.join(os.path.dirname(__file__), 'output', 'final_model.joblib')
 
 def delete_folder_if_exists(folder):
     os.path.exists(folder) and shutil.rmtree(folder)
-
-def run_ck(java_code_folder):
-    print("Running CK tool to extract metrics...")
-    os.makedirs(ck_output_folder, exist_ok=True)
-    ck_command = ['java', '-jar', os.path.join(os.path.dirname(__file__), ck_jar_path), java_code_folder, 'false', '0', 'false']
-
-    try:
-        subprocess.run(ck_command, check=True, capture_output=True, text=True, cwd=ck_output_folder)
-        print(f"CK tool finished. Output files saved in: {ck_output_folder}")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Error running CK tool: {e}")
-        print(f"Stdout: {e.stdout}")
-        print(f"Stderr: {e.stderr}")
-        return False
     
 def get_base_class_name(class_path):
     if "." not in class_path:
         return class_path
     return class_path.split(".")[-1]
     
-def code_smell_detection(java_code_folder):
-    print("Running Code Smell Detection...")
+def code_smell_detection(java_code_folder, codesmell):
+    print(f"Running Code Smell Detection ({codesmell})...")
+    
+    preprocessing_pipeline_path = os.path.join(os.path.dirname(__file__), 'output', codesmell, 'preprocessing_pipeline.joblib')
+    selected_features_path = os.path.join(os.path.dirname(__file__), 'output', codesmell, 'selected_features.joblib')
+    final_model_path = os.path.join(os.path.dirname(__file__), 'output', codesmell, 'final_model.joblib')
+    
     try:
         loaded_pipeline = joblib.load(preprocessing_pipeline_path)
         selected_features = joblib.load(selected_features_path)
@@ -57,7 +42,8 @@ def code_smell_detection(java_code_folder):
         new_data_final = new_data[selected_features]
         predictions = loaded_model.predict(new_data_final)
         
-        print(f"Code Smell Predictions for the Java classes ({java_code_folder}):")
+        print(f"Code Smell  ({codesmell}) Predictions for the Java classes ({java_code_folder}):")
+        
         code_smell_classes = []
         for index, prediction in enumerate(predictions):
             class_name = get_base_class_name(new_data['class'].iloc[index])
@@ -67,7 +53,8 @@ def code_smell_detection(java_code_folder):
                     'file': file,
                     'class': class_name
                 })
-        print(f"Found {len(code_smell_classes)} classes with code smell")
+                
+        print(f"Found {len(code_smell_classes)} classes with {codesmell}")
         return code_smell_classes
 
     except FileNotFoundError as e:
@@ -77,20 +64,36 @@ def code_smell_detection(java_code_folder):
         print(f"An error occurred during prediction: {e}")
         return []
 
-def main(java_code_folder):
+def run_ck(java_code_folder):
+    print("Running CK tool to extract metrics...")
+    os.makedirs(ck_output_folder, exist_ok=True)
+    ck_command = ['java', '-jar', os.path.join(os.path.dirname(__file__), ck_jar_path), java_code_folder, 'false', '0', 'false']
+
+    try:
+        subprocess.run(ck_command, check=True, capture_output=True, text=True, cwd=ck_output_folder)
+        print(f"CK tool finished. Output files saved in: {ck_output_folder}")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Error running CK tool: {e}")
+        print(f"Stdout: {e.stdout}")
+        print(f"Stderr: {e.stderr}")
+        return False
+
+def main(java_code_folder, codesmell):
     ck_successful = run_ck(java_code_folder)
     if not ck_successful:
         delete_folder_if_exists(ck_output_folder)
-        return
+        return []
     
-    code_smell_classes = code_smell_detection(java_code_folder)
+    code_smell_classes = code_smell_detection(java_code_folder, codesmell)
     delete_folder_if_exists(ck_output_folder)
     return code_smell_classes
     
 try:
-    target = sys.argv[1]
-    code_smell_classes = main(java_code_folder=sys.argv[1])
+    target_folder = sys.argv[1]
+    codesmell_type = sys.argv[2]
+    code_smell_classes = main(java_code_folder=sys.argv[1], codesmell=codesmell_type)
     print(json.dumps(code_smell_classes))
 except Exception as e:
-    print(f"Error occurred: {e}")
+    print(f'Error occured: {e}')
     print(json.dumps([]))

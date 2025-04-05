@@ -8,7 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const codeSmellViewProvider = new CodeSmellViewProvider(context);
 	
 	context.subscriptions.push(
-	vscode.commands.registerCommand('codesmell.analyseProject', async () => {
+	vscode.commands.registerCommand('codesmell.analyseProject', async (smelltype: string) => {
 		const workspaceFolders = vscode.workspace.workspaceFolders;
 
 		if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		try {
 			const analysisResult = await vscode.window.withProgress({location: { viewId: "codesmell.sidebar" }, title: "", cancellable: false}, async (progress, token) => {
-				const result = await runPythonAnalysis(folderPath);
+				const result = await runPythonAnalysis(folderPath, smelltype);
 				return result;
 			});
 			
@@ -64,7 +64,8 @@ class CodeSmellViewProvider implements vscode.WebviewViewProvider {
 	  	webviewView.webview.onDidReceiveMessage(message => {
 			switch (message.command) {
 				case 'analyseProject':
-					vscode.commands.executeCommand('codesmell.analyseProject');
+					const smelltype = message.smelltype
+					vscode.commands.executeCommand('codesmell.analyseProject', smelltype);
 					break;
 				case 'navigate':
 					const file: string = message.data.file;
@@ -135,7 +136,8 @@ function getNonce() {
 	return text;
 }
 
-function runPythonAnalysis(targetPath: string): Promise<any> {
+function runPythonAnalysis(targetPath: string, smelltype: string): Promise<any> {
+
 	return new Promise((resolve, reject) => {
 		const venvPath = path.join(__dirname, "..", "..", 'venv');
 		let pythonExecutable = 'python';
@@ -152,7 +154,7 @@ function runPythonAnalysis(targetPath: string): Promise<any> {
 		}
 
 		const pythonScriptPath = path.join(__dirname, '..', "..", 'codesmell_script.py');
-		const args = [pythonScriptPath, targetPath];
+		const args = [pythonScriptPath, targetPath, smelltype];
 
 		const proc = cp.spawn(pythonExecutable, args, {});
 		let accumulatedLogs = "";

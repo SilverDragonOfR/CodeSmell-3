@@ -11,6 +11,16 @@
 
     <body>
         <h2>Welcome to CodeSmell</h2>
+        <label for="smelltype">Select Code Smell:</label>
+        <select id="smelltype">
+            <option selected value="featureenvy">Feature Envy</option>
+            <option value="godclass">God Class</option>
+            <option value="longmethod">Long Method</option>
+            <option value="longparameter">Long Parameter</option>
+            <option value="refusedbequest">Refused Bequest</option>
+            <option value="shotgunsurgery">Shotgun Surgery</option>
+        </select>
+        <hr class="horizontal">
         <p>Click to start your analysis.</p>
         <button id="analyseProject">Analyse Project</button>
         <hr class="horizontal">
@@ -23,7 +33,11 @@
             document.getElementById('analyseProject').addEventListener('click', () => {
                 document.getElementById('summary').innerHTML = "";
                 document.getElementById('results').innerHTML = "";
-                vscode.postMessage({ command: 'analyseProject' });
+                const selectedSmell = document.getElementById('smelltype').value;
+                vscode.postMessage({ 
+                    command: 'analyseProject',
+                    smelltype: selectedSmell,
+                });
             });
 
             window.addEventListener('message', event => {
